@@ -1,0 +1,23 @@
+CREATE TABLE repositories_requests (
+    id INTEGER PRIMARY KEY,
+    id_repository INTEGER,
+    id_query INTEGER,
+    name TEXT,
+    description TEXT,
+    html_url TEXT,
+    size REAL,
+    homepage TEXT,
+    watchers_count INTEGER,
+    subscribers_count INTEGER,
+    stargazers_count INTEGER,
+    forks_count INTEGER,
+    open_issues_count INTEGER,
+    network_count INTEGER,
+    has_issues INTEGER,
+    created_at TEXT,
+    pushed_at TEXT,
+    project_page TEXT,
+    request_datetime TEXT,
+    FOREIGN KEY(id_repository) REFERENCES repositories(id),
+    FOREIGN KEY(id_query) REFERENCES queries(id)
+);

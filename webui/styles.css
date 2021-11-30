@@ -1,0 +1,20 @@
+html {
+    background:  #eee;
+    color: black;
+    font-family: "DejaVu Sans Mono", sans-serif;
+    font-size: 0.9em;
+    text-align: justify;
+}
+
+body {
+    margin:0 auto;
+    width: 50%;
+}
+
+table {
+    font-family: Arial;
+}
+
+tbody td {
+    text-align: center;
+}

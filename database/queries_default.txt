@@ -1,0 +1,55 @@
+arxiv
+attention
+audio processing
+augmentation
+Automatic Face and Gesture Recognition
+BMVC
+British Machine Vision Conference
+CAIP
+Computer Vision
+convolution
+cs.CV
+CVPR
+data science
+dataset pytorch
+deep learning
+ECCV
+Emotion Classification
+face recognition
+GAN
+GCPR
+generative adversarial
+ICCV
+ICDAR
+ICIP
+ICML
+ieee
+Image Analysis
+Image and Signal Processing and Analysis
+Image Classification
+image generation
+Image Processing
+Instance Segmentation
+International Conference on Machine Learning
+machine learning
+music generation
+natural language processing
+neural
+Neural Information Processing Systems
+neural network
+NeurIPS
+NLP
+OpenAI CLIP
+paper implemention
+pytorch
+Pytorch implementation
+recurrent neural network
+RNN
+Semantic Segmentation
+signal processing
+Transformer
+VAE
+variational autoencoder
+video analysis
+voice generation
+WACV
