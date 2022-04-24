@@ -1,16 +1,96 @@
-from wsgiref.simple_server import make_server
-from urllib.parse import urlparse, parse_qs
 import telegram
 import markdown
+from urllib.parse import parse_qs
 from bs4 import BeautifulSoup
 
-from api.update import get_updates
-from database.constants import PROJECT_PATH, FORWARD_CHAT_ID
-from database import functions as database
-from api.github_functions import get_readme_text
+from src.api import database
+from src.api.update import get_updates
+from src.config.config import PROJECT_PATH
+from src.config.config import CONFIG
+from src.api.github_functions import get_readme_text
+from src.api.github_functions import get_tree
 
-from bot.functions import get_updater
-from bot.utils import create_message
+from src.bot.functions import get_updater
+from src.bot.utils import create_message
+
+
+def prepare_update_for_html(update):
+    # queries
+    queries = ' + '.join([q['value'] for q in database.get_repository_queries(update['id_repository'])])
+    update.update({'queries': queries})
+
+    # size
+    update['size'] = '{} MB'.format('%.2f' % (update['size'] / 1024))
+
+    # readme
+    readme_text = get_readme_text(update['html_url'])
+    if readme_text is not None:
+        readme_text = ''.join(BeautifulSoup(markdown.markdown(readme_text)).findAll(text=True))[:1000]
+        update['readme_text'] = readme_text
+    else:
+        update['readme_text'] = 'None'
+
+    # files tree
+    files_tree = get_tree(update['html_url'])
+    update['files_tree'] = files_tree if files_tree else []
+
+    if update['project_page'] is None:
+        del update['project_page']
+
+    if update['homepage'] is None:
+        del update['homepage']
+
+
+def prepare_updates_for_html(updates):
+    for update in updates:
+        prepare_update_for_html(update)
+
+
+def prepare_repository_for_html(repository):
+    repository['seen'] = 'True' if repository['seen'] else 'False'
+
+
+def prepare_repositories_for_html(repositories):
+    for repository in repositories:
+        prepare_repository_for_html(repository)
+
+
+def seen(id_repository):
+    database.update_repository_property_by_id(id_repository, 'seen', True)
+
+
+def unseen(id_repository):
+    database.update_repository_property_by_id(id_repository, 'seen', False)
+
+
+def share(id_request):
+    updater = get_updater()
+    update = database.get_repository_request_by_id(id_request)
+    update_query_name(update)
+    message = create_message(update)
+    updater.bot.sendMessage(chat_id=CONFIG['telegram']['chat_to_forward'],
+            text=message, parse_mode=telegram.ParseMode.HTML)
+
+
+def query_results_unseen_count(query, updates):
+    results_unseen_count = sum([u['id_query'] == query['id'] for u in updates])
+    query['results_unseen_count'] = results_unseen_count
+
+
+def queries_results_unseen_count(queries):
+    updates = database.get_repositories_requests_updates()
+    for query in queries:
+        query_results_unseen_count(query, updates)
+
+
+def query_results_count(query):
+    results_count = len(database.get_repositories_query(query['id']))
+    query['results_count'] = results_count
+
+
+def queries_results_count(queries):
+    for query in queries:
+        query_results_count(query)
 
 
 HTML = '''
@@ -28,7 +108,7 @@ HTML = '''
 '''
 
 
-with open(PROJECT_PATH + 'webui/styles.css') as f:
+with open(PROJECT_PATH / 'src' / 'web' / 'static' / 'style.css') as f:
     STYLE = f.read()
 
 # COLUMNS = ['id', 'id_repository', 'id_query', 'name', 'description', 'html_url', 'size', 'homepage',
@@ -39,16 +119,16 @@ COLUMNS = ['name', 'description', 'html_url', 'query', 'size', 'homepage', 'proj
       'network_count', 'has_issues', 'created_at', 'pushed_at', 'request_datetime']
 
 
-def share(id_request):
-    updater = get_updater()
-    update = database.get_repository_request_by_id(id_request)
-    update_query_name(update)
-    message = create_message(update)
-    updater.bot.sendMessage(chat_id=FORWARD_CHAT_ID, text=message, parse_mode=telegram.ParseMode.HTML)
 
 
 def update_query_name(update):
-    query_name = [q['value'] for q in database.get_queries() if q['id'] == update['id_query']][0]
+    query_name = [q['value'] for q in database.get_queries() if q['id'] == update['id_query']]
+    if len(query_name) > 0:
+        # query_name = query_name[0]
+        query_name = ' + '.join([q['value'] for q in
+            database.get_repository_queries(update['id_repository'])])
+    else:
+        query_name = ''
     update.update({'query': query_name})
 
 
@@ -57,8 +137,26 @@ def format_update(update):
     update['size'] = '{} MB'.format('%.2f' % (update['size'] / 1024))
 
 
+def generate_query_filter():
+    html = '''
+    <form action='query_filter' method='get'>
+        <select name="id_queries">'''
+
+    html += '<option selected value=""></option>'
+    for q in database.get_queries():
+        html += '<option value="{}">{}</option>'.format(q['id'], q['value'])
+
+    html += '''
+        </select>
+       <input type="submit">
+    </form>'''
+    return html
+
+
 def updates_to_html(updates, num_updates):
-    html = '<h1>Updates</h1>'
+    html = ''
+    html += generate_query_filter()
+    html += '<h1>Updates</h1>'
     html += '<br>'
     html += '<h2>Total: {}</h2>'.format(num_updates)
 
@@ -133,6 +231,16 @@ def updates_to_html(updates, num_updates):
             update_html += readme_text
             update_html += "</div>"
 
+        tree = get_tree(update['html_url'])
+        if tree is not None:
+            update_html += '<br>'
+            update_html += '<b>Content:</b><br>'
+            text = '\n'.join(tree)
+            update_html += "<div style='font-size: 0.7em'>"
+            for el in tree:
+                update_html += f'- {el}<br>'
+            update_html += "</div>"
+
         html += '<hr>' + update_html
 
     return html
@@ -171,6 +279,20 @@ def app_updates(environ, start_response):
         start_response('302 Found', [('Location', '/')])
         return []
 
+    elif method == 'GET' and path == '/query_filter':
+        # print(*sorted(environ.items()), sep='\n')
+        request_body_dict = parse_qs(environ['QUERY_STRING'])
+        id_queries = [int(request_body_dict['id_queries'][0])]
+        updates, num_updates = get_updates(max_updates=1, mark_as_seen=False, filter_queries=id_queries)
+        html = updates_to_html(updates, num_updates)
+        response_body = HTML.format(body=html, style=STYLE).encode()
+        status = '200 OK'
+        headers = [('Content-type', 'text/html'),
+                   ('Content-Length', str(len(response_body)))]
+                   # ('Location', '/query_filter?id_queries={}'.format(','.join(map(str, id_queries))))]
+        start_response(status, headers)
+        return [response_body]
+
     else:
         updates, num_updates = get_updates(max_updates=1, mark_as_seen=False)
         html = updates_to_html(updates, num_updates)
@@ -180,13 +302,3 @@ def app_updates(environ, start_response):
                    ('Content-Length', str(len(response_body)))]
         start_response(status, headers)
         return [response_body]
-
-
-def serve_web(ip, port):
-    """Start the server."""
-    httpd = make_server(ip, port, app_updates)
-    httpd.serve_forever()
-
-
-if __name__ == "__main__":
-    serve_web('0.0.0.0', 8050)

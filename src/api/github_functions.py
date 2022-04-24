@@ -6,14 +6,16 @@ from github.GithubException import UnknownObjectException
 from itertools import cycle
 from datetime import datetime, timedelta
 
-from database.constants import GITHUB_API_TOKENS, update_config
-from utils.time import datetime2str
+from src.config.config import CONFIG
+from src.api.time import datetime2str
 
 
-g_list = cycle([Github(token) for token in GITHUB_API_TOKENS.values()])
+g_list = cycle([Github(token) for token in CONFIG['github']['tokens'].values()])
+
 query_template='''
 {query_name} language:python in:readme in:title in:description stars:>={minimal_stars} created:>={last_time_pushed}
 '''
+
 
 def search_repositories(query: dict, max_results: int = None):
     # 30 search requests / minute
@@ -21,15 +23,17 @@ def search_repositories(query: dict, max_results: int = None):
 
     g = next(g_list)
 
-    sleep_interval = 2 / len(GITHUB_API_TOKENS) + 0.001
-    last_time_pushed = datetime2str(datetime.now() - timedelta(**update_config['last_time_pushed_interval']))
+    sleep_interval = 2 / len(CONFIG['github']['tokens']) + 0.001
+
+    last_time_pushed = datetime.now() - timedelta(**CONFIG['github']['update']['query']['last_time_pushed_interval'])
+    last_time_pushed = datetime2str(last_time_pushed)
 
     sleep(sleep_interval)
     num_results = 0
 
     for repo in g.search_repositories(query=query_template.format(
             query_name=query['value'],
-            minimal_stars=update_config['minimal_stars'],
+            minimal_stars=CONFIG['github']['update']['query']['minimal_stars'],
             last_time_pushed=last_time_pushed,
         )):
 
@@ -92,3 +96,19 @@ def get_readme_text(html_url):
             return text
 
     return None
+
+
+def get_tree(html_url):
+    g = next(g_list)
+
+    # https://github.com/ken2576/nelf -> ken2576/nelf
+    repo_full_name = '/'.join(html_url.rsplit('/')[-2:])
+
+    try:
+        repo = g.get_repo(repo_full_name)
+    except UnknownObjectException:
+        return None
+
+    contents = repo.get_contents("")
+    tree = [content.path for content in contents]
+    return tree

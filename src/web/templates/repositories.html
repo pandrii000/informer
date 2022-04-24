@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Repositories{% endblock %}
+{% block head %}
+    {{ super() }}
+{% endblock %}
+{% block content %}
+    <h1>Repositories</h1>
+
+    <table class="rtable">
+    <tr>
+        <th>Id</th>
+        <th>Name</th>
+        <th>Seen</th>
+        <th>Controls</th>
+    </tr>
+    {% for item in repositories %}
+        <tr>
+            <td style="text-align: left;">{{ item.id }}</td>
+            <td style="text-align: left;"><a href="{{ item.name }}">{{ item.name }}</a></td>
+            <td style="text-align: left;">
+            {% if item.seen == "True" %}
+                <font color="green">{{ item.seen }}</font>
+            {% else %}
+                <font color="red">{{ item.seen }}</font>
+            {% endif %}
+            </td>
+            <td style="text-align: left">
+                <div class="menu">
+                    <div class="button">
+                        <form action='seen' method='GET'>
+                        <input type='hidden' name='id_repository' value='{{ item.id }}'>
+                        <input type='submit' class="block" value='Seen'>
+                        </form>
+                    </div>
+                    <div class="button">
+                        <form action='unseen' method='GET'>
+                        <input type='hidden' name='id_repository' value='{{ item.id }}'>
+                        <input type='submit' class="block" value='Unseen'>
+                        </form>
+                    </div>
+                </div>
+                <!-- <table> -->
+                <!-- <tr style="height: 10px"> -->
+                <!--     <td> -->
+                <!--         <form action='seen' method='GET'> -->
+                <!--         <input type='hidden' name='id_repository' value='{{ item.id }}'> -->
+                <!--         <input type='submit' class="block" value='Seen'> -->
+                <!--         </form> -->
+                <!--     </td> -->
+                <!--     <td> -->
+                <!--         <form action='unseen' method='GET'> -->
+                <!--         <input type='hidden' name='id_repository' value='{{ item.id }}'> -->
+                <!--         <input type='submit' class="block" value='Unseen'> -->
+                <!--         </form> -->
+                <!--     </td> -->
+                <!-- </tr> -->
+                <!-- </table> -->
+            </td>
+        </tr>
+    {% endfor %}
+    </table>
+{% endblock %}

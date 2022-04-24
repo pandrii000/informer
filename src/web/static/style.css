@@ -1,0 +1,99 @@
+html {
+    background:  #eee;
+    color: black;
+    font-family: "DejaVu Sans Mono", sans-serif;
+    font-size: 0.9em;
+    text-align: justify;
+}
+
+body {
+    margin: 1% auto;
+    width: 50%;
+}
+
+.rtable {
+    font-family: Arial;
+
+    /* overflow определяет, необходимо ли для переполненного блочного элемента содержимое обрезать, */
+    /* предоставить полосы прокрутки или просто отобразить. */
+    overflow-x: auto;
+    overflow-y: auto;
+
+    // white-space управляет тем, как обрабатываются пробельные символы внутри элемента.
+    // nowrap Объединяет последовательности пробелов в один пробел, как значение normal,
+    // но не переносит строки (оборачивание текста) внутри текста.
+    white-space: nowrap;
+
+    // Устанавливает, как отображать границы вокруг ячеек таблицы. Это свойство играет роль,
+    // когда для ячеек установлена рамка, тогда в месте стыка ячеек получится линия двойной толщины
+    // Линия между ячейками отображается только одна, также игнорируется значение атрибута cellspacing.
+    border-collapse: collapse;
+
+    border-spacing: 0;
+}
+
+table.rtable{
+    /* means they take 100% of the parent width. */
+    /* display: inline-block; */
+
+    /* table-layout: fixed; */
+
+    width: 100%;
+    /* max-width: 100%; */
+}
+
+/* th.rtable, td.rtable { */
+.rtable th, .rtable td {
+    text-align: left;
+    border: 1px solid #d9d7ce;
+    padding: 6px 6px;
+}
+
+.rtable th {
+    background: #f2f0e6;
+}
+
+.menu {
+    display: table-row;
+}
+
+.button {
+    display: table-cell;
+    height: 100%; /* scale the height with respect to the table */
+    padding: 0px 6px 0px 6px;
+}
+
+input[type=submit] {
+    /* display: table-cell; */
+    display: inline-block;
+    width: 100%;
+    height: 100%;
+    background-color: #bfc08f;
+    margin: 0px 2px 0px 2px;
+    border-radius: 5px;
+    border-color: #eee;
+    cursor: pointer;
+    text-align: center;
+    transition-duration: 0.4s;
+}
+
+input[type=submit]:hover {
+    background-color: #white;
+    color: white;
+}
+
+/* .block { */
+/*     /1* display: table-cell; *1/ */
+/*     display: inline-block; */
+/*     width: 100%; */
+/*     height: 100%; */
+/*     background-color: #f6f4e8; */
+/*     margin: 0px 6px 0px 6px; */
+/*     border-radius: 5px; */
+/*     cursor: pointer; */
+/*     text-align: center; */
+/* } */
+
+/* .block:hover { */
+/*     background: #beb; */
+/* } */

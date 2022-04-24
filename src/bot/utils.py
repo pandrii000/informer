@@ -1,5 +1,5 @@
-from api.update import get_updates
-from database import functions as database
+from src.api.update import get_updates
+from src.api import database
 
 
 def create_message(update):

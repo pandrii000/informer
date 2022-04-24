@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Queries{% endblock %}
+{% block head %}
+    {{ super() }}
+{% endblock %}
+{% block content %}
+    <h1>Queries</h1>
+
+    <dev>
+    <form action='add_query' method='GET'>
+    <table style='width: 100%;'>
+    <tr>
+    <td><input type='text' name='query_name' style='width:100%'></td>
+    <td style='padding:0px 10px 0px  10px;'><input type='submit' value='Add' style='width:100%'></td>
+    </tr>
+    <table>
+    </form>
+
+    <table class="rtable">
+    <tr>
+        <th>Id</th>
+        <th>Value</th>
+        <th>Results (Unseen)</th>
+        <th>Results</th>
+        <th>Controls</th>
+    </tr>
+    {% for item in queries %}
+        <tr>
+            <td style="text-align:left">{{ item.id }}</td>
+            <td style="text-align:left">{{ item.value }}</td>
+            <td style="text-align:left">
+                <a href="{{ url_for('updates', search_query=item.value) }}">{{ item.results_unseen_count }}</a>
+            </td>
+            <td style="text-align:left">{{ item.results_count }}</td>
+            <td style="text-align:left">
+                <form action='remove_query' method='GET'>
+                <input type='hidden' name='id_query' value='{{ item.id }}'>
+                <input type='submit' value='Remove'>
+                </form>
+            </td>
+        </tr>
+    {% endfor %}
+    </table>
+    </dev>
+{% endblock %}

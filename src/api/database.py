@@ -3,7 +3,7 @@ from sqlite3 import connect
 from collections import OrderedDict
 from datetime import datetime
 
-from database.constants import PROJECT_PATH, DB_PATH, SQL_PATH
+from src.config.config import PROJECT_PATH, DB_PATH, SQL_PATH, CONFIG
 
 
 def initialize_database():
@@ -13,14 +13,17 @@ def initialize_database():
 
 
 def create_database():
-    with open(SQL_PATH + 'create_table_queries.sql') as f:
+    with open(SQL_PATH / 'create_table_queries.sql') as f:
         _create_table_queries = f.read()
 
-    with open(SQL_PATH + 'create_table_repositories.sql') as f:
+    with open(SQL_PATH / 'create_table_repositories.sql') as f:
         _create_table_repositories = f.read()
 
-    with open(SQL_PATH + 'create_table_repositories_requests.sql') as f:
+    with open(SQL_PATH / 'create_table_repositories_requests.sql') as f:
         _create_table_repositories_requests = f.read()
+
+    with open(SQL_PATH / 'create_table_repositories_queries.sql') as f:
+        _create_table_repositories_queries = f.read()
 
     con = connect(DB_PATH)
     cur = con.cursor()
@@ -30,11 +33,13 @@ def create_database():
     con.commit()
     cur.execute(_create_table_repositories_requests)
     con.commit()
+    cur.execute(_create_table_repositories_queries)
+    con.commit()
     con.close()
 
 
 def add_query(query: str):
-    with open(SQL_PATH + 'add_query.sql') as f:
+    with open(SQL_PATH / 'add_query.sql') as f:
         _add_query = f.read()
 
     con = connect(DB_PATH)
@@ -45,7 +50,7 @@ def add_query(query: str):
 
 
 def get_query_id(query: str):
-    with open(SQL_PATH + 'get_query_id.sql') as f:
+    with open(SQL_PATH / 'get_query_id.sql') as f:
         _get_query_id = f.read()
 
     con = connect(DB_PATH)
@@ -61,7 +66,7 @@ def get_query_id(query: str):
 
 
 def remove_query(query: str):
-    with open(SQL_PATH + 'remove_query.sql') as f:
+    with open(SQL_PATH / 'remove_query.sql') as f:
         _remove_query = f.read()
 
     con = connect(DB_PATH)
@@ -72,8 +77,19 @@ def remove_query(query: str):
     con.close()
 
 
+def remove_query_by_id(query_id: int):
+    with open(SQL_PATH / 'remove_query.sql') as f:
+        _remove_query = f.read()
+
+    con = connect(DB_PATH)
+    cur = con.cursor()
+    cur.execute(_remove_query, [query_id])
+    con.commit()
+    con.close()
+
+
 def clean_seen_repositories_requests():
-    with open(SQL_PATH + 'clean_seen_repositories_requests.sql') as f:
+    with open(SQL_PATH / 'clean_seen_repositories_requests.sql') as f:
         _clean_seen_repositories_requests = f.read()
 
     con = connect(DB_PATH)
@@ -83,8 +99,19 @@ def clean_seen_repositories_requests():
     con.close()
 
 
+def clean_old_repositories_requests():
+    with open(SQL_PATH / 'clean_old_repositories_requests.sql') as f:
+        _clean_old_repositories_requests = f.read()
+
+    con = connect(DB_PATH)
+    cur = con.cursor()
+    cur.execute(_clean_old_repositories_requests)
+    con.commit()
+    con.close()
+
+
 def get_queries():
-    with open(SQL_PATH + 'get_queries.sql') as f:
+    with open(SQL_PATH / 'get_queries.sql') as f:
         _get_queries = f.read()
 
     columns = ['id', 'value']
@@ -99,16 +126,8 @@ def get_queries():
     return list(map(lambda values: dict(zip(columns, values)), queries))
 
 
-# def test_query():
-#     initialize_database()
-#     add_query('neural network')
-#     print(get_query_id('neural network'))
-#     # remove_query('neural network')
-#     print(get_queries())
-
-
 def add_repository(name: str, seen: bool):
-    with open(SQL_PATH + 'add_repository.sql') as f:
+    with open(SQL_PATH / 'add_repository.sql') as f:
         _add_repository = f.read()
 
     con = connect(DB_PATH)
@@ -119,7 +138,7 @@ def add_repository(name: str, seen: bool):
 
 
 def get_repository_id(name: str):
-    with open(SQL_PATH + 'get_repository_id.sql') as f:
+    with open(SQL_PATH / 'get_repository_id.sql') as f:
         _get_repository_id = f.read()
 
     con = connect(DB_PATH)
@@ -135,7 +154,7 @@ def get_repository_id(name: str):
 
 
 def get_repository_by_id(id_repository: int):
-    with open(SQL_PATH + 'get_repository_by_id.sql') as f:
+    with open(SQL_PATH / 'get_repository_by_id.sql') as f:
         _get_repository_by_id = f.read()
 
     columns = ['id', 'name', 'seen']
@@ -153,7 +172,7 @@ def get_repository_by_id(id_repository: int):
 
 
 def update_repository_property(name: str, property_name, property_value):
-    with open(SQL_PATH + 'update_repository_property.sql') as f:
+    with open(SQL_PATH / 'update_repository_property.sql') as f:
         _update_repository_property = f.read()
 
     con = connect(DB_PATH)
@@ -165,7 +184,7 @@ def update_repository_property(name: str, property_name, property_value):
 
 
 def update_repository_property_by_id(repository_id: str, property_name, property_value):
-    with open(SQL_PATH + 'update_repository_property.sql') as f:
+    with open(SQL_PATH / 'update_repository_property.sql') as f:
         _update_repository_property = f.read()
 
     con = connect(DB_PATH)
@@ -176,7 +195,7 @@ def update_repository_property_by_id(repository_id: str, property_name, property
 
 
 def get_repositories():
-    with open(SQL_PATH + 'get_repositories.sql') as f:
+    with open(SQL_PATH / 'get_repositories.sql') as f:
         _get_repositories = f.read()
 
     columns = ['id', 'name', 'seen']
@@ -192,7 +211,7 @@ def get_repositories():
 
 
 def remove_repository(name: str):
-    with open(SQL_PATH + 'remove_repository.sql') as f:
+    with open(SQL_PATH / 'remove_repository.sql') as f:
         _remove_repository = f.read()
 
     con = connect(DB_PATH)
@@ -203,17 +222,8 @@ def remove_repository(name: str):
     con.close()
 
 
-# def test_repository():
-#     initialize_database()
-#     add_repository('asd/jfks-dfs', False)
-#     print(get_repository_id('asd/jfks-dfs'))
-#     update_repository_property('asd/jfks-dfs', 'seen', True)
-#     print(get_repositories())
-#     remove_repository('asd/jfks-dfs')
-
-
 def add_repositories_requests(attrs: dict):
-    with open(SQL_PATH + 'add_repositories_requests.sql') as f:
+    with open(SQL_PATH / 'add_repositories_requests.sql') as f:
         _add_repositories_requests = f.read()
 
     con = connect(DB_PATH)
@@ -224,7 +234,7 @@ def add_repositories_requests(attrs: dict):
 
 
 def get_repositories_requests():
-    with open(SQL_PATH + 'get_repositories_requests.sql') as f:
+    with open(SQL_PATH / 'get_repositories_requests.sql') as f:
         _get_repositories_requests = f.read()
 
     columns = ['id', 'id_repository', 'id_query', 'name', 'description', 'html_url', 'size', 'homepage',
@@ -240,8 +250,9 @@ def get_repositories_requests():
 
     return list(map(lambda values: dict(zip(columns, values)), repositories))
 
+
 def get_repositories_requests_updates():
-    with open(SQL_PATH + 'get_repositories_requests_updates.sql') as f:
+    with open(SQL_PATH / 'get_repositories_requests_updates.sql') as f:
         _get_repositories_requests_updates = f.read()
 
     columns = ['id', 'id_repository', 'id_query', 'name', 'description', 'html_url', 'size', 'homepage',
@@ -258,8 +269,26 @@ def get_repositories_requests_updates():
     return list(map(lambda values: dict(zip(columns, values)), repositories))
 
 
+def get_repositories_requests_updates_by_query_id(id_query: int):
+    with open(SQL_PATH / 'get_repositories_requests_updates_by_query_id.sql') as f:
+        _get_repositories_requests_updates_by_query_id = f.read()
+
+    columns = ['id', 'id_repository', 'id_query', 'name', 'description', 'html_url', 'size', 'homepage',
+    'watchers_count', 'subscribers_count', 'stargazers_count', 'forks_count', 'open_issues_count',
+    'network_count', 'has_issues', 'created_at', 'pushed_at', 'project_page', 'request_datetime']
+
+    con = connect(DB_PATH)
+    cur = con.cursor()
+    cur.execute(_get_repositories_requests_updates_by_query_id, [id_query])
+    repositories = cur.fetchall()
+    con.commit()
+    con.close()
+
+    return list(map(lambda values: dict(zip(columns, values)), repositories))
+
+
 def get_repository_request_by_id(id_request: int):
-    with open(SQL_PATH + 'get_repository_request_by_id.sql') as f:
+    with open(SQL_PATH / 'get_repository_request_by_id.sql') as f:
         _get_repository_request_by_id = f.read()
 
     columns = ['id', 'id_repository', 'id_query', 'name', 'description', 'html_url', 'size', 'homepage',
@@ -316,13 +345,59 @@ def initialize_test_database():
 
 
 def initialize_database_insert_queries():
-    with open(PROJECT_PATH + 'database/queries_default.txt') as f:
+    with open(PROJECT_PATH / 'storage' / 'queries' / 'default.txt') as f:
         for line in f.readlines():
             line = line.strip()
             add_query(line)
 
 
+def add_repositories_queries(id_repository: int, id_query: int):
+    with open(SQL_PATH / 'add_repositories_queries.sql') as f:
+        _add_repositories_queries = f.read()
+
+    con = connect(DB_PATH)
+    cur = con.cursor()
+    cur.execute(_add_repositories_queries, [id_repository, id_query])
+    con.commit()
+    con.close()
+
+
+def get_repositories_query(id_query: int):
+    with open(SQL_PATH / 'get_repositories_query.sql') as f:
+        _get_repositories_query = f.read()
+
+    columns = ['id', 'id_repository', 'id_query', 'name', 'description', 'html_url', 'size', 'homepage',
+    'watchers_count', 'subscribers_count', 'stargazers_count', 'forks_count', 'open_issues_count',
+    'network_count', 'has_issues', 'created_at', 'pushed_at', 'project_page', 'request_datetime']
+
+    con = connect(DB_PATH)
+    cur = con.cursor()
+    cur.execute(_get_repositories_query, [id_query])
+    repositories = cur.fetchall()
+    con.commit()
+    con.close()
+
+    return list(map(lambda values: dict(zip(columns, values)), repositories))
+
+
+def get_repository_queries(id_repository: int):
+    with open(SQL_PATH / 'get_repository_queries.sql') as f:
+        _get_repository_queries = f.read()
+
+    columns = ['id', 'value']
+
+    con = connect(DB_PATH)
+    cur = con.cursor()
+    cur.execute(_get_repository_queries, [id_repository])
+    queries = cur.fetchall()
+    con.commit()
+    con.close()
+
+    return list(map(lambda values: dict(zip(columns, values)), queries))
+
+
 if __name__ == '__main__':
+    # create_database()
     # test_query()
     # test_repository()
     # test_repository_request()
@@ -330,10 +405,18 @@ if __name__ == '__main__':
 
     # print(get_repositories_requests_updates())
     # print(get_repository_request_by_id(12000))
-    print(get_repository_by_id(60))
+    # print(get_repository_by_id(60))
 
     # initialize_database()
     # insert_queries()
     # update_repository_property('https://github.com/tatarenstas/ImageAI-Objects-Detection', 'seen', True)
+
+    # add_repositories_queries(1, 2)
+    # add_repositories_queries(1, 3)
+    # add_repositories_queries(2, 2)
+    # add_repositories_queries(3, 1)
+    # add_repositories_queries(3, 1)
+    # print(get_repositories_query(id_query=1))
+    # print(get_repository_queries(id_repository=4))
 
     pass

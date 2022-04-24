@@ -2,13 +2,16 @@ from tqdm import tqdm
 from datetime import datetime
 from collections import OrderedDict
 
-from database import functions as database
-from api.github_functions import search_repositories, search_project_page
-from utils.time import datetime2str
+from src.config.config import CONFIG
+
+from src.api import database
+from src.api.github_functions import search_repositories, search_project_page
+from src.api.time import datetime2str
 
 
 def clean_database():
     database.clean_seen_repositories_requests()
+    database.clean_old_repositories_requests()
 
 
 def update_database():
@@ -52,8 +55,12 @@ def update_database():
 
             database.add_repositories_requests(attrs)
 
+            if attrs['id_query'] not in [q['id'] for q in
+                    database.get_repository_queries(attrs['id_repository'])]:
+                database.add_repositories_queries(attrs['id_repository'], attrs['id_query'])
 
-def get_updates(max_updates: int = None, mark_as_seen=True):
+
+def get_updates(max_updates: int = None, mark_as_seen=True, search_query=None):
     repositories = database.get_repositories_requests_updates()
     num_updates = len(repositories)
 
@@ -61,6 +68,24 @@ def get_updates(max_updates: int = None, mark_as_seen=True):
             key=lambda r: -(r['stargazers_count'] + r['subscribers_count'] + r['forks_count'] +
                 r['open_issues_count'] + r['network_count'])
     )
+
+    if search_query is not None:
+        query_id_to_name = {q['id']: q['value'] for q in database.get_queries()}
+        query_name_to_id = {q['value']: q['id'] for q in database.get_queries()}
+        possible_query_id = query_name_to_id[search_query] if search_query in query_name_to_id else ''
+        searched_repositories = []
+        for r in repositories:
+            if (
+                    search_query.lower() in str(r['name']).lower() or
+                    search_query.lower() in str(r['html_url']).lower() or
+                    search_query.lower() in str(r['description']).lower() or
+                    # if search_query.lower() in query_id_to_name[r['id_query']] or
+                    search_query.lower() in ''.join([q['value'] for q in database.get_repository_queries(r['id_repository'])]) or
+                    possible_query_id == r['id_query']
+                    ):
+                searched_repositories.append(r)
+        repositories = searched_repositories
+        num_updates = len(repositories)
 
     if max_updates is not None:
         repositories = repositories[:max_updates]

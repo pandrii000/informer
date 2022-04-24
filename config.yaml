@@ -1,0 +1,65 @@
+# which modules of the system should be launched now
+modules:
+
+  # autoupdate database and search for a new repositories
+  - autoupdate
+
+  # launch web interface of the app
+  - web
+
+  # launch telegram bot of the app
+  - bot
+
+
+# github
+github:
+
+  # github.com access tokens
+  # the more tokens you have, the faster parsing will be!
+  # https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
+  tokens:
+    your_token_name1: your_token_value1 # REPLACE IT WITH YOUR VALUES
+    your_token_name2: your_token_value2 # REPLACE IT WITH YOUR VALUES
+
+  # configs related to github parsing and autoupdate
+  update:
+
+    # intervals between autoupdates, in seconds
+    interval: 1800 # 60 * 30 = 1800 seconds, or every 30 minutes
+
+    # github search query parameters
+    query:
+
+      # minimal stars of the repository, to be found
+      minimal_stars: 2
+
+      # last time ago, when repository was created, to be found
+      last_time_pushed_interval:
+        days: 14
+
+
+# telegram bot
+telegram:
+
+  # telegram bot parameters
+  # could be created by @BotFather
+  bot:
+
+    # bot username
+    name: "@your_bot_username" # REPLACE IT WITH YOUR VALUES
+
+    # bot token
+    token: "your_telegram_bot_token" # REPLACE IT WITH YOUR VALUES
+
+  # chat to forward new repositories info
+  chat_to_forward: "@your_chat_to_forward" # REPLACE IT WITH YOUR VALUES
+
+  # your id to access your telegram bot
+  # https://www.alphr.com/telegram-find-user-id
+  my_chat_id: "your_personal_telegram_id" # REPLACE IT WITH YOUR VALUES
+
+
+# web interface
+web:
+  host: "0.0.0.0"
+  port: 8050

@@ -1,27 +1,32 @@
-from datetime import timedelta, datetime
 from functools import wraps
-from shutil import copy
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram import InlineQueryResultArticle, ParseMode, InputTextMessageContent, Update
-from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, CallbackContext
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-from telegram.ext import Updater, InlineQueryHandler, CommandHandler, CallbackContext
-from telegram.utils.helpers import escape_markdown
-from threading import Event
-from time import sleep
-from typing import Union, List
-from uuid import uuid4
-import cv2
+from telegram.ext import CommandHandler
+from telegram.ext import Filters
+from telegram.ext import MessageHandler
+from telegram.ext import Updater
 import logging
-import os
 import telegram
 
-from database.constants import TELEGRAM_BOT_TOKEN, MY_CHAT_ID, HELP, FORWARD_CHAT_ID
-from bot.utils import get_update_messages, get_queries, add_query, remove_query
+from src.config.config import CONFIG
+from src.bot.utils import get_update_messages, get_queries, add_query, remove_query
 
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+HELP = '''
+Commands available:
+    - start - Start bot
+    - help - Help
+    - update - Update
+    - analyse - Analyse
+    - queries - Queries
+    - clean_db - Clean database (auto-backup)
+    - backup_db - Backup database
+    - add_query - Add query
+    - remove_query - Remove query
+    - set_time_interval - Set time interval
+    - get_time_interval - Get time interval
+'''
 
 
 def restricted(func):
@@ -29,7 +34,7 @@ def restricted(func):
     @wraps(func)
     def wrapped(update, context, *args, **kwargs):
         user_id = update.effective_user.id
-        if user_id != MY_CHAT_ID:
+        if user_id != CONFIG['telegram']['my_chat_id']:
 
             update.message.reply_text('User disallowed.')
 
@@ -67,7 +72,7 @@ def command_help(update, context):
 
 @restricted
 def command_update(update, context):
-    messages, num_updates = get_update_messages(max_updates=5)
+    messages, num_updates = get_update_messages(max_updates=1)
 
     if len(messages) == 0:
         messages = ['Nothing new.']
@@ -118,13 +123,13 @@ def command_remove_query(update, context):
     )
 
 
-@restricted
-def command_get_time_interval(update, context):
-    time_interval = get_time_interval()
-    context.bot.send_message(
-        chat_id=update.effective_message.chat_id,
-        text='Time interval is {}'.format(str(time_interval)),
-    )
+# @restricted
+# def command_get_time_interval(update, context):
+#     time_interval = get_time_interval()
+#     context.bot.send_message(
+#         chat_id=update.effective_message.chat_id,
+#         text='Time interval is {}'.format(str(time_interval)),
+#     )
 
 @restricted
 def forwarded_message(update, context):
@@ -146,7 +151,7 @@ def error_handler(update, context):
 
 
 def get_updater():
-    updater = Updater(TELEGRAM_BOT_TOKEN, use_context=True)
+    updater = Updater(CONFIG['telegram']['bot']['token'], use_context=True)
     return updater
 
 
@@ -155,8 +160,8 @@ def serve_bot():
     updater = get_updater()
     dp = updater.dispatcher
 
-    dp.add_handler(CommandHandler("start",  command_start))
-    dp.add_handler(CommandHandler("help",   command_help))
+    dp.add_handler(CommandHandler("start", command_start))
+    dp.add_handler(CommandHandler("help", command_help))
     dp.add_handler(CommandHandler("update", command_update))
     dp.add_handler(CommandHandler("queries", command_queries))
     dp.add_handler(CommandHandler("add_query", command_add_query))

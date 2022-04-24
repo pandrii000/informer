@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Updates{% endblock %}
+{% block head %}
+    {{ super() }}
+{% endblock %}
+{% block content %}
+    <h1>Updates</h1>
+
+    <form action='search_updates' method='GET'>
+    <table style='width:100%'>
+    <tr>
+    <td><input type='text' name='search_query' value='{{ search_query }}' style='width:100%'></td>
+    <td style='padding:0px 10px 0px  10px;'><input type='submit' value='Search' style='width:100%'></td>
+    </tr>
+    <table>
+    </form>
+
+    <h2>Total: {{ num_updates }}</h2>
+
+    <hr>
+    {% for update in updates %}
+        <h2 style='text-align: center'><a href={{ update.html_url }}>{{ update.name }}</a></h2>
+
+        <p>
+        <b>Description:</b> {{ update.description }}<br>
+        {% if update.homepage is defined %}
+            <b>Homepage:</b> <a href='{{ update.homepage }}'>{{ update.homepage }}</a><br>
+        {% endif %}
+        {% if update.project_page is defined %}
+            <b>Project page:</b> <a href='{{ update.project_page }}'>{{ update.project_page }}</a><br>
+        {% endif %}
+        <b>Size:</b> {{ update.size }}<br>
+        <b>Queries:</b> {{ update.queries }}<br>
+        </p>
+
+        <table class="rtable">
+        <tr>
+            <th>Watchers</th>
+            <th>Subscribers</th>
+            <th>Stargazers</th>
+            <th>Forks</th>
+            <th>Open issues</th>
+            <th>Network</th>
+        </tr>
+        <tr>
+            <td>{{ update.watchers_count }}</td>
+            <td>{{ update.subscribers_count }}</td>
+            <td>{{ update.stargazers_count }}</td>
+            <td>{{ update.forks_count }}</td>
+            <td>{{ update.open_issues_count }}</td>
+            <td>{{ update.network_count }}</td>
+        </tr>
+        </table>
+
+        <div class="menu">
+            <div class="button">
+                <form action='seen' method='GET'>
+                <input type='hidden' name='id_repository' value='{{ update.id_repository }}'>
+                <input type='submit' class="block" value='Seen'>
+                </form>
+            </div>
+            <div class="button">
+                <form action='share_and_seen' method='GET'>
+                <input type='hidden' name='id_repository' value='{{ update.id_repository }}'>
+                <input type='hidden' name='id_request' value='{{ update.id }}'>
+                <input type='submit' class="block" value='Share & Seen'>
+                </form>
+            </div>
+        </div>
+
+        <p><b>Readme:</b><br>{{ update.readme_text }}</p>
+
+        <p>
+            <b>Files:</b><br>
+            {% for file in update.files_tree %}
+            - {{ file }}<br>
+            {% endfor %}
+        </p>
+
+        <hr>
+    {% endfor %}
+{% endblock %}
