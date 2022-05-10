@@ -18,7 +18,7 @@ You can enable or disable them in `config.yaml`.
 
 ## TODO
 
-- [ ] refactor SQL: optimize scripts architecture.
+- [x] refactor SQL: optimize scripts architecture (peewee).
 - [ ] web interface: add database backup interface.
 - [ ] complete telegram bot code.
 - [ ] refactor code: make possible to easily add new attributes to the repositories, that can be extracted by the algorithms. Currently, it is hard-coded in many files.
