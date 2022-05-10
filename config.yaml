@@ -27,6 +27,9 @@ github:
     # intervals between autoupdates, in seconds
     interval: 1800 # 60 * 30 = 1800 seconds, or every 30 minutes
 
+    # max search items per one query request
+    max_results: 10
+
     # github search query parameters
     query:
 

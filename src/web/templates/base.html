@@ -12,6 +12,17 @@
         <a href="{{ url_for('updates') }}">Updates</a>
         <a href="{{ url_for('queries') }}">Queries</a>
         <a href="{{ url_for('repositories') }}">Repositories</a>
+        {% if updating %}
+            <a><font color="green">Updating...</font></a>
+        {% else %}
+            <a>
+                <div class="button">
+                    <form action='start_updating' method='GET'>
+                        <input type='submit' class="block" value='Update'>
+                    </form>
+                </div>
+            </a>    
+        {% endif %}
     </div>
     <div id="content">{% block content %}{% endblock %}</div>
 </body>

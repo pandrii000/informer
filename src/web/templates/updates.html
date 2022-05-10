@@ -22,6 +22,7 @@
         <h2 style='text-align: center'><a href={{ update.html_url }}>{{ update.name }}</a></h2>
 
         <p>
+        <b>Author:</b> <a href='{{ update.author_url }}'>{{ update.author }}</a><br>
         <b>Description:</b> {{ update.description }}<br>
         {% if update.homepage is defined %}
             <b>Homepage:</b> <a href='{{ update.homepage }}'>{{ update.homepage }}</a><br>
@@ -68,14 +69,14 @@
             </div>
         </div>
 
-        <p><b>Readme:</b><br>{{ update.readme_text }}</p>
-
         <p>
             <b>Files:</b><br>
             {% for file in update.files_tree %}
             - {{ file }}<br>
             {% endfor %}
         </p>
+
+        <p><b>Readme:</b><br>{{ update.readme_text | safe }}</p>
 
         <hr>
     {% endfor %}
